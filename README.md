@@ -7,10 +7,10 @@ A web based tool to label images. It uses Google Vision API returned Bounding Bo
 It runs directly from the browser and bounding boxes on image are clickable and label gets popped up upon clicking the bouding box boundary
 
 - Add a label for a box
- - For the box you would like to give a label, find its id (noted in the top left corner of the box)
- - Find the label with the corresponding number
- - Enter the name you want in the input field
- - Press enter
+  - For the box you would like to give a label, find its id (noted in the top left corner of the box)
+- Find the label with the corresponding number
+  - Enter the name you want in the input field
+  - Press enter
 - Remove label click the red button on the label you would like to remove
 - Move to previous image
  - Click the blue previous Arrow button 
