@@ -51,9 +51,11 @@ def next():
             f.write(image + "," +
             label["id"] + "," +
             label["name"] + "," +
+            label["angle"] + "," +
             str(round(float(label["xMin"]))) + "," +
             str(round(float(label["xMax"]))) + "," +
             str(round(float(label["yMin"]))) + "," +
+            str(round(float(label["gid"]))) + "," +
             str(round(float(label["yMax"]))) + "\n")
     app.config["LABELS"] = []
     return redirect(url_for('labeller'))
@@ -80,11 +82,13 @@ def bye():
 
 @app.route('/add/<id>')
 def add(id):
+    angle = request.args.get("angle")
+    gid = request.args.get("gid")
     xMin = request.args.get("xMin")
     xMax = request.args.get("xMax")
     yMin = request.args.get("yMin")
     yMax = request.args.get("yMax")
-    app.config["LABELS"].append({"id":id, "name":"", "xMin":xMin, "xMax":xMax, "yMin":yMin, "yMax":yMax})
+    app.config["LABELS"].append({"id":id, "name":"", "xMin":xMin, "xMax":xMax, "yMin":yMin, "yMax":yMax, "gid":gid, "angle":angle})
     return redirect(url_for('labeller'))
 
 @app.route('/remove/<id>')
