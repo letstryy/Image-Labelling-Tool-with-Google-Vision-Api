@@ -32,6 +32,9 @@ It runs directly from the browser and bounding boxes on image are clickable and 
 ## How to Run
 
 1. Install flask
+```bash
+pip install flask 
+```
 
 2. Open the terminal and run 
 
