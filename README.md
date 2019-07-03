@@ -2,6 +2,9 @@
 
 A web based tool to label images. It uses Google Vision API returned Bounding Boxes coordinates.
 
+## Google Vision Api
+Get the google vision document text detection api key and add to the file to see the results.
+
 ## Features
 
 It runs directly from the browser and bounding boxes on image are clickable and label gets popped up upon clicking the bouding box boundary
