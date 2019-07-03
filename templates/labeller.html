@@ -8,12 +8,13 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/cerulean/bootstrap.min.css" rel="stylesheet"></link>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
-<body style="height:100%;">
+<body style="height:100%; background-color:#A9A9A9;">
 <nav id="sidebar" style="
             width: 25%;
             height: 100%;
-            float: left;
+            float: right;
             z-index: 8000;
+            overflow: scroll;
             background-color:#37383d;
             margin-bottom: 0px;">
     <div class="panel panel-default" style="height: 100%; background-color:#37383d;">
@@ -48,43 +49,51 @@
         </div>
     </div>
 </nav>
-<div id="content" class="container" style="
-            width: 75%;
+<nav id="sidebar" style="
+            width: 10%;
             height: 100%;
-            float: right;
+            float: left;
             z-index: 8000;
-            margin-bottom:
-            0px;">
-    <div class="row">
-    <text> <font color="black"><b>{{ head }} / {{ len }}</b></font> </text>
-    {% if not(first == 0) %}
-      <a href="/prev" class="btn btn-primary" style="float:left;" type="button">
-        <span class="glyphicon glyphicon-arrow-left"></span>
-      </a>
-      </a>
-    {% endif %}
-    {% if not_end %}
-      <a href="/next" class="btn btn-primary" style="float:right;" type="button">
-        <span class="glyphicon glyphicon-arrow-right"></span>
-      </a>
-    {% else %}
-      <a href="/next" class="btn btn-primary" style="float:right;" type="button">
-        <span class="glyphicon glyphicon-ok"> </span>
-      </a>
-    {% endif %}
-    <center>
-      <button type="button" id="zoomin" onclick="zoomin()" class="btn btn-primary">
-        <span class="glyphicon glyphicon-zoom-in"> </span></button>
-        <button type="button" id="zoomout" onclick="zoomout()" class="btn btn-primary">
-          <span class="glyphicon glyphicon-zoom-out"> </span></button>
-      <a href="/discard" class="btn btn-primary" type="button">
-        <span class="glyphicon glyphicon-remove"> </span>
-      </a>
-    </center>
+            background-color:#37383d;
+            margin-bottom: 0px;">
+  <div class="panel panel-default" style="height: 100%; background-color:#37383d;">
+    <div class="panel-heading" style="height: 4.5%";>
+        <h3 class="panel-title"></h3>
     </div>
-    <div style="overflow: scroll">
-        <canvas id="canvas" style="width:100%; height:80%; margin: 0; padding: 0;"></canvas>
+    <div class="btn-group-vertical" style="float: left; display: block; cursor: pointer; padding: 10px;">
+  {% if (first == 1) or (first == 0) %}
+  <a href="/next" onclick="clearlocalstorage()" class="btn btn-default" style="float:right; margin-top: 25px;" type="button">Next
+    <span class="glyphicon glyphicon-arrow-right"></span>
+  </a>
+  {% endif %}
+    <button type="button" id="drawrect" onclick="drawrect()" class="btn btn-default" style="float:right; margin-top: 20px;">Draw
+      <span class="glyphicon glyphicon-edit"> </span></button>
+      <button type="button" id="removerect" onclick="removerect()" class="btn btn-default" style="float:right; margin-top: 20px;"> Remove
+        <span class="glyphicon glyphicon-erase"> </span></button>
+          <button type="button" id="rrotate" onclick="restore()" class="btn btn-default" style="float:right; margin-top: 20px;"> Restore
+        <button type="button" id="rrotate" onclick="rrotate()" class="btn btn-default" style="float:right; margin-top: 20px;"> Rotate Right
+            <button type="button" id="rrotate" onclick="lrotate()" class="btn btn-default" style="float:right; margin-top: 20px;"> Rotate Left
+          <button type="button" id="frotate" onclick="frotate()" class="btn btn-default" style="float:right; margin-top: 20px;"> Rotate 180
+            <span class="glyphicon glyphicon-refresh"> </span></button>
+        <button type="button" id="zoomin" onclick="zoomin()" class="btn btn-default" style="float:right; margin-top: 20px;"> Zoom-In
+          <span class="glyphicon glyphicon-zoom-in"> </span></button>
+          <button type="button" id="zoomout" onclick="zoomout()" class="btn btn-default" style="float:right; margin-top: 20px;"> Zoom-Out
+            <span class="glyphicon glyphicon-zoom-out"> </span></button>
+            <a href="/discard" class="btn btn-default" type="button" style="float:right; margin-top: 20px;"> Discard
+              <span class="glyphicon glyphicon-remove"> </span>
+            </a>
+           </div>
     </div>
+</nav>
+  <div style="float:center;">
+    <div class="panel-heading" style="height: 3%;">
+        <h3 class="panel-title">
+    <text> <font color="black">Welcome, <b>{{ usr }}</b>, Rx id: <b>{{ rx_id }}</b></font> </text></h3>
+    <div style="overflow:scroll;">
+        <canvas id="canvas" style="width:100%; height:100%; margin: auto;"></canvas>
+    </div>
+    </div>
+  </div>
     <script>
       var bounds = {{ bounds|tojson|safe }};
       var ar = JSON.stringify(bounds);
@@ -92,118 +101,269 @@
       var labels = {{ labels|tojson|safe }};
       var c = document.getElementById("canvas");
       var ctx = c.getContext("2d");
-      var dx = c.getContext("2d");
-      var cx = c.getContext("2d");
-      var drawLabels = function(id, xMin, xMax, yMin, yMax) {
+      var last_mousex = last_mousey = 0;
+      var mousex = mousey = 0;
+      var mousedown = false;
+      var rx, ry;
+      var image = new Image();
+      var rect = {};
+      var drag = false;
+      var rx, ry, rw, rh;
+      var xMi, yMi, xMa, yMa;
+      var angle;
+      var drawLabels = function(id, xMin, yMin) {
         ctx.strokeStyle = "blue";
         ctx.fillStyle = "blue";
         ctx.font = "900 20px Arial";
-        ctx.fillText("id: " + id, xMin,yMin);
+        ctx.fillText("label: " + id, xMin,yMin);
         ctx.strokeStyle = "blue";
         ctx.fillStyle = "blue";
         ctx.lineWidth="5";
         ctx.stroke();
       };
-      var image = new Image();
-      console.log(image);
-      var visibleWidth = image.width;
-      var visibleHeight = image.height;
-      var fPoint = {};
+      var rw = localStorage.getItem("rw");
+      var rh = localStorage.getItem("rh");
+      var cw = localStorage.getItem("cw");
+      var lw = localStorage.getItem("lw");
+      var lh = localStorage.getItem("lh");
+      var fh = localStorage.getItem("fh");
       window.onload = function(e) {
         ctx.canvas.width = image.width;
         ctx.canvas.height = image.height;
         c.width = image.width;
-        c.height = image.height;
+        c.height= image.height;
         ctx.drawImage(image, 0, 0);
-        console.log(labels);
+        if(rw) {
+          c.style.transform = "rotate(90deg)";
+          c.style.marginTop = "200px";
+          angle = 90;
+         }
+        else if(lw) {
+          c.style.transform = "rotate(-90deg)";
+          c.style.marginTop = "200px";
+          angle = 270;
+         }
+        else if(fh) {
+          c.style.transform = "rotate(180deg)";
+          angle = 180;
+         }
+        else {
+          c.style.transform = "none";
+          angle = 0;
+         }
+        if(cw)
+        {
+          c.style.width = cw;
+        }
         for (i = 0; i < labels.length; i++){
-          drawLabels(labels[i].id, labels[i].xMin, labels[i].xMax, labels[i].yMin, labels[i].yMax);
+          drawLabels(labels[i].id, labels[i].xMin, labels[i].yMin);
         }
         var j, i;
         function drawpolygon(e) {
           if (e)
           {
-            var x = (image.width / c.scrollWidth) * e.offsetX;
-            var y = (image.height / c.scrollHeight) * e.offsetY;
+            var x = (ctx.canvas.width / c.scrollWidth) * e.offsetX;
+            var y = (ctx.canvas.height / c.scrollHeight) * e.offsetY;
           }
           for (i = 0; i < ar.vertices.length; i++) {
             for (j = 0; j <= 3; j++) {
-              cx.beginPath();
-              cx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
-              cx.lineTo(ar.vertices[i][1].x, ar.vertices[i][1].y);
-              cx.lineTo(ar.vertices[i][2].x, ar.vertices[i][2].y);
-              cx.lineTo(ar.vertices[i][3].x, ar.vertices[i][3].y);
+              ctx.beginPath();
+              ctx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
+              ctx.lineTo(ar.vertices[i][1].x, ar.vertices[i][1].y);
+              ctx.lineTo(ar.vertices[i][2].x, ar.vertices[i][2].y);
+              ctx.lineTo(ar.vertices[i][3].x, ar.vertices[i][3].y);
               if (j == 3) {
-                cx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
+                ctx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
               }
-              cx.strokeStyle = "red";
-              cx.lineWidth="2.5";
-              cx.stroke();
-              cx.closePath();
-              var xMin;
-              var xMax;
-              var yMin;
-              var yMin;
-              fPoint = {
-                x: x,
-                y: y
-              };
-              if (x > fPoint.x) {
-                xMax = x;
-                xMin = fPoint.x;
-              } else {
-                xMax = fPoint.x;
-                xMin = x;
-              }
-              if (y > fPoint.y) {
-                yMax = y;
-                yMin = fPoint.y;
-              } else {
-                yMax = fPoint.y;
-                yMin = y;
-              }
-              fPoint = {};
-              if(cx.isPointInStroke(x, y)) {
-                cx.strokeStyle = "green";
-                cx.lineWidth = "2.5";
-                cx.stroke();
-                window.location.replace("/add/" + (labels.length + 1) +
-                "?xMin=" + xMin +
-                "&xMax=" + xMax +
-                "&yMin=" + yMin +
-                "&yMax=" + yMax);
+              ctx.strokeStyle = "#B22222";
+              ctx.lineWidth="2.5";
+              ctx.stroke();
+              ctx.closePath();
+              var xMin, yMin,xMax, yMax;
+              if(ctx.isPointInPath(x, y)) {
+                ctx.strokeStyle = "green";
+                ctx.lineWidth = "3.5";
+                ctx.stroke();
+                xMin = ar.vertices[i][0].x;
+                yMin = ar.vertices[i][0].y;
+                xMax = ar.vertices[i][2].x;
+                yMax = ar.vertices[i][2].y;
+              window.location.replace("/add/" + (labels.length+1) +
+                  "?angle=" + angle +
+                  "&xMin=" + xMin +
+                  "&yMin=" + yMin +
+                  "&xMax=" + xMax +
+                  "&yMax=" + yMax +
+                  "&gid=" + (i+1));
             }
           }
         }
       }
-      $('#canvas').click(drawpolygon);
+      c.addEventListener("click", drawpolygon);
       drawpolygon();
     for (i = 0; i < labels.length; i++){
+      ctx.restore();
       checkclicked(labels[i].id,labels[i].xMin, labels[i].yMin);
+    }
+    var rrx = localStorage.getItem("rrx");
+    var rry = localStorage.getItem("rry");
+    var rrw = localStorage.getItem("rrw");
+    var rrh = localStorage.getItem("rrh");
+    var dx = rrx.split(',');
+    var dy = rry.split(',');
+    var dw = rrw.split(',');
+    var dh = rrh.split(',');
+    for (i = 0; i < rrx.split(',').length; i++) {
+      ctx.restore();
+      ctx.rect(dx[i], dy[i], dw[i], dh[i]);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = "3";
+      ctx.stroke();
     }
     };
     function checkclicked(id,x,y){
       for (i = 0; i < ar.vertices.length; i++) {
         for (j = 0; j <= 3; j++) {
-          cx.beginPath();
-          cx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
-          cx.lineTo(ar.vertices[i][1].x, ar.vertices[i][1].y);
-          cx.lineTo(ar.vertices[i][2].x, ar.vertices[i][2].y);
-          cx.lineTo(ar.vertices[i][3].x, ar.vertices[i][3].y);
+          ctx.beginPath();
+          ctx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
+          ctx.lineTo(ar.vertices[i][1].x, ar.vertices[i][1].y);
+          ctx.lineTo(ar.vertices[i][2].x, ar.vertices[i][2].y);
+          ctx.lineTo(ar.vertices[i][3].x, ar.vertices[i][3].y);
           if (j == 3) {
-            cx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
+            ctx.lineTo(ar.vertices[i][0].x, ar.vertices[i][0].y);
           }
-          cx.closePath();
-          if(cx.isPointInStroke(x, y)) {
-            cx.strokeStyle = "green";
-            cx.lineWidth = "2.5";
-            cx.stroke();
-
+          ctx.closePath();
+          if(ctx.isPointInPath(x, y)) {
+            ctx.strokeStyle = "green";
+            ctx.lineWidth = "3.5";
+            ctx.stroke();
           }
         }
       }
     }
-    //Zoom In and Zoom Out functions
+    function redraw(tox, toy, ctx) {
+      ctx.beginPath();
+      ctx.rect(rx, ry, tox - rx, toy - ry);
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = "3";
+      ctx.stroke();
+      ctx.closePath();
+      xMi = rx;
+      yMi = ry;
+      xMa = tox - rx;
+      yMa = toy - ry;
+      var qx = localStorage.getItem("rrx");
+      var qy = localStorage.getItem("rry");
+      var qw = localStorage.getItem("rrw");
+      var qh = localStorage.getItem("rrh");
+      qx = qx ? qx.split(',') : [];
+      qy = qy ? qy.split(',') : [];
+      qw = qw ? qw.split(',') : [];
+      qh = qh ? qh.split(',') : [];
+      qx.push(xMi);
+      qy.push(yMi);
+      qw.push(xMa);
+      qh.push(yMa);
+      localStorage.setItem("rrx", qx.toString());
+      localStorage.setItem("rry", qy.toString());
+      localStorage.setItem("rrw", qw.toString());
+      localStorage.setItem("rrh", qh.toString());
+      window.location.replace("/add/" + (labels.length+1) +
+          "?angle=" + angle +
+          "&xMin=" + xMi +
+          "&yMin=" + yMi +
+          "&xMax=" + tox +
+          "&yMax=" + toy +
+          "&gid=" + 'None');
+    }
+    function drawrect() {
+      canvas.style.cursor = "crosshair";
+      $(c).on('mousedown', function(e) {
+        last_mousex = parseInt((ctx.canvas.width / c.scrollWidth) * e.offsetX);
+        last_mousey = parseInt((ctx.canvas.height / c.scrollHeight) * e.offsetY);
+        rx = last_mousex;
+        ry = last_mousey;
+        mousedown = true;
+      });
+      $(c).on('mouseup', function(e) {
+        last_mousex = parseInt((ctx.canvas.width / c.scrollWidth) * e.offsetX);
+        last_mousey = parseInt((ctx.canvas.height / c.scrollHeight) * e.offsetY);
+        mousedown = false;
+        if(!mousedown)
+        {
+          redraw(last_mousex, last_mousey, ctx);
+        }
+      });
+      $(c).on('mousemove', function(e) {
+        mousex = parseInt((ctx.canvas.width / c.scrollWidth) * e.offsetX);
+        mousey = parseInt((ctx.canvas.height / c.scrollHeight) * e.offsetY);
+        if(mousedown) {
+          var width = mousex-last_mousex;
+          var height = mousey-last_mousey;
+        }
+      });
+    }
+  function clearlocalstorage() {
+    localStorage.clear();
+  }
+  function removerect() {
+    var rrx = localStorage.getItem("rrx");
+    var rry = localStorage.getItem("rry");
+    var rrw = localStorage.getItem("rrw");
+    var rrh = localStorage.getItem("rrh");
+    var dx = rrx.split(',')
+    var dy = rry.split(',')
+    var dw = rrw.split(',')
+    var dh = rrh.split(',')
+    var index = rrx.split(',').length;
+    dx.pop();
+    dy.pop();
+    dw.pop();
+    dh.pop();
+    localStorage.setItem("rrx", dx.toString());
+    localStorage.setItem("rry", dy.toString());
+    localStorage.setItem("rrw", dw.toString());
+    localStorage.setItem("rrh", dh.toString());
+    location.reload();
+  }
+  function restore()
+  {
+    c.style.transform = "none";
+    angle = 0;
+    localStorage.removeItem("rw");
+    localStorage.removeItem("fh");
+    localStorage.removeItem("lw");
+  }
+  function rrotate()
+  {
+    c.style.transform = "rotate(90deg)";
+    c.style.marginTop = "200px";
+    angle = 90;
+    localStorage.removeItem("lw");
+    localStorage.removeItem("lh");
+    localStorage.removeItem("fh");
+    localStorage.setItem("rw", "90");
+  }
+  function lrotate()
+  {
+    c.style.transform = "rotate(-90deg)";
+    c.style.marginTop = "200px";
+    angle = 270;
+    localStorage.removeItem("rw");
+    localStorage.removeItem("rh");
+    localStorage.removeItem("fh");
+    localStorage.setItem("lw","-90");
+  }
+  function frotate()
+   {
+     c.style.transform = "rotate(180deg)";
+     angle = 180;
+     localStorage.removeItem("rw");
+     localStorage.removeItem("rh");
+     localStorage.removeItem("lw");
+     localStorage.removeItem("lh");
+     localStorage.setItem("fh","180");
+  }
     function zoomin() {
      var myImg = document.getElementById("canvas");
         var currWidth = myImg.clientWidth;
@@ -212,6 +372,7 @@
         } else{
             myImg.style.width = (currWidth + 50) + "px";
         }
+        localStorage.setItem("cw", myImg.style.width);
     }
     function zoomout() {
       var myImg = document.getElementById("canvas");
@@ -221,9 +382,11 @@
        } else{
            myImg.style.width = (currWidth - 50) + "px";
        }
+       localStorage.setItem("cw", myImg.style.width);
     }
     image.style.display="block";
-    image.src = "image/{{ image }}";
+    image.src = "{{ image }}";
     </script>
 </body>
 </html>
+
