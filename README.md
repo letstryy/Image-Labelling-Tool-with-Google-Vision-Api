@@ -21,10 +21,14 @@ It runs directly from the browser and bounding boxes on image are clickable and 
   - Rotate 180
   - Rotate 90
   - Rotate -90
+- Draw Rectangle
+  - Manually draw rectangle
+- Remove Rectangle
+  - Delete the rectangle
 - Discard the image
   - Click on the Discard button
 - Output File
-  - At the top level of the directory where the program was run, there should be a file called out.csv that contains the generate data
+  - At the top level of the directory where the program was run, there should be a file called out.csv that contains the generated data whch contains the google id and image coordinates.
 ## How to Run
 
 1. Install flask
