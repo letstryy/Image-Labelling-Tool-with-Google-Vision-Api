@@ -53,3 +53,5 @@ This application is built upon following technology stack.
 - Flask
 - HTML5-canvas
 - JS
+## Author
+Sneha Rawat [sneharawatt@gmail.com]
