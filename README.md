@@ -12,14 +12,17 @@ It runs directly from the browser and bounding boxes on image are clickable and 
   - Enter the name you want in the input field
   - Press enter
 - Remove label click the red button on the label you would like to remove
-- Move to previous image
-  - Click the blue previous Arrow button 
 - Move to next image
-  - Click the blue next Arrow button
+  - Click the next Arrow button
 - ZoomIn and ZoomOut
-  - Click on the blue ZoomIn and Zoomout button
+  - Click on the ZoomIn and Zoomout button
+- Rotate image
+  - Restore
+  - Rotate 180
+  - Rotate 90
+  - Rotate -90
 - Discard the image
-  - Click on the blue Discard button
+  - Click on the Discard button
 - Output File
   - At the top level of the directory where the program was run, there should be a file called out.csv that contains the generate data
 ## How to Run
