@@ -22,8 +22,8 @@ It runs directly from the browser and bounding boxes on image are clickable and 
 - Rotate image
   - Restore
   - Rotate 180
-  - Rotate 90
-  - Rotate -90
+  - Rotate Right
+  - Rotate Left
 - Draw Rectangle
   - Manually draw rectangle
 - Remove Rectangle
