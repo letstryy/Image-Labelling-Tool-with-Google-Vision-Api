@@ -32,6 +32,9 @@ It runs directly from the browser and bounding boxes on image are clickable and 
   - Click on the Discard button
 - Output File
   - At the top level of the directory where the program was run, there should be a file called out.csv that contains the generated data whch contains the google id, angle(Click on the rotate button to get the right orientation of the image and get the angle accordingly; for future use, want to crop details, get the image orientation, rotate it according to the angle and then crop) and image coordinates.
+  
+ ![Screen Shot 2019-09-21 at 4 24 25 PM](https://user-images.githubusercontent.com/14850120/65372349-adbeb700-dc8c-11e9-83c5-c246d7106655.png)
+ 
 ## How to Run
 
 1. Install flask and google-cloud-vision
