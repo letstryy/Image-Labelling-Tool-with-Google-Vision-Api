@@ -66,3 +66,5 @@ This application is built upon following technology stack.
 - JS
 ## Author
 Sneha Rawat [sneharawatt@gmail.com]
+
+Linkedin: https://www.linkedin.com/in/sneharawatt/
