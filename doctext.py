@@ -3,8 +3,8 @@ from enum import Enum
 import io
 import json
 import os, os.path
-from google.cloud import vision
-from google.cloud.vision import types
+from google.cloud import vision_v1
+from google.cloud.vision_v1 import types
 from PIL import Image, ImageDraw
 
 class FeatureType(Enum):
@@ -16,7 +16,7 @@ class FeatureType(Enum):
 
 def get_document_bounds(image_file, feature):
 
-    client = vision.ImageAnnotatorClient()
+    client = vision_v1.ImageAnnotatorClient()
 
     bounds = []
 
