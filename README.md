@@ -47,7 +47,7 @@ pip install google-cloud-vision
 2. Open the terminal and run 
 
 ```bash
-python3 app.py 
+python3 app.py dir_name/
 ```
 3. Open your browser (if it hasn't popped up already) at: http://127.0.0.1:5000/
 
